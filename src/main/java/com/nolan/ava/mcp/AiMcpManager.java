@@ -1,4 +1,4 @@
-package com.surlse.ava.mcp;
+package com.nolan.ava.mcp;
 
 import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpHandler;
@@ -11,14 +11,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Logger;
 
 public class AiMcpManager {
     private final JavaPlugin plugin;
     private HttpServer server;
     private boolean enabled = false;
     private int port;
-    private final Logger logger;
 
     public AiMcpManager(JavaPlugin plugin) {
         this.plugin = plugin;
