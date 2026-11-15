@@ -24,6 +24,7 @@ import com.nolan.ava.checks.PacketChecks;
 import com.nolan.ava.commands.ACCommandExecutor;
 import com.nolan.ava.data.PlayerData;
 import com.nolan.ava.listeners.AvAListener;
+import com.nolan.ava.mcp.AiMcpManager;
 import com.nolan.ava.util.HardwareManager;
 import com.nolan.ava.util.LogManager;
 import com.nolan.ava.util.UpdateManager;
@@ -120,6 +121,7 @@ public class AvAAntiCheat extends JavaPlugin {
     private LogManager logManager;
     private UpdateManager updateManager;
     private PacketChecks packetChecks;
+    private AiMcpManager aiMcpManager;
 
     @Override
     public void onEnable() {
@@ -154,6 +156,13 @@ public class AvAAntiCheat extends JavaPlugin {
         updateManager = new UpdateManager(this, AC_VERSION, AC_PREFIX, false);
 
         loadConfigValues();
+
+        // Initialize AI MCP Manager
+        aiMcpManager = new AiMcpManager(this);
+        if (aiMcpManager.isEnabled()) {
+            aiMcpManager.startServer();
+        }
+
         combatLoggersFile = new File(getDataFolder(), "combat-loggers.txt");
         loadCombatLoggers();
 
@@ -202,6 +211,10 @@ public class AvAAntiCheat extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (aiMcpManager != null) {
+            aiMcpManager.stopServer();
+        }
+
         for (PlayerData data : playerDataMap.values()) {
             if (data.combatBossBar != null) {
                 data.combatBossBar.removeAll();
@@ -735,6 +748,10 @@ public class AvAAntiCheat extends JavaPlugin {
 
     public UpdateManager getUpdateManager() {
         return updateManager;
+    }
+
+    public AiMcpManager getAiMcpManager() {
+        return aiMcpManager;
     }
 
     public int normalizeSeverity(int severity) {
