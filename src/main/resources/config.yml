@@ -135,3 +135,9 @@ kick-limits:
   multi-aura: 5
   nofall: 5
   scaffold: 8
+# AI server (Ollama)
+ai-mcp:
+  enabled: false
+  port: 8080
+  ollama-url: "http://localhost:11434"
+  model: "llama3"
