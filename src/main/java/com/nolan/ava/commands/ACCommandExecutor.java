@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 
-// Handles /ac (status/start/stop/perf/mods/info/debug/kick/checkop/reload)
+// Handles /ac (status/start/stop/perf/mods/info/debug/kick/checkop/reload/ai)
 
 public class ACCommandExecutor implements CommandExecutor {
 
@@ -58,11 +58,37 @@ public class ACCommandExecutor implements CommandExecutor {
             }
 
             if (args.length == 0) {
-                sender.sendMessage(prefix + ChatColor.AQUA + "Usage: /ac <status|start <1-4>|stop|kick|mods|info|checkop|reload|perf|debug>");
+                sender.sendMessage(prefix + ChatColor.AQUA + "Usage: /ac <status|start <1-4>|stop|kick|mods|info|checkop|reload|perf|debug|ai>");
                 return true;
             }
 
             String subCommand = args[0].toLowerCase();
+
+            if (subCommand.equals("ai")) {
+                if (args.length < 2) {
+                    sender.sendMessage(prefix + ChatColor.RED + "Usage: /ac ai <enable|disable|status>");
+                    return true;
+                }
+                String aiAction = args[1].toLowerCase();
+                if (aiAction.equals("enable")) {
+                    plugin.getAiMcpManager().setEnabled(true);
+                    sender.sendMessage(prefix + ChatColor.GREEN + "AI MCP Server enabled on port " + plugin.getAiMcpManager().getPort());
+                    plugin.logToFile(senderName, "EXECUTED AC AI enable");
+                    return true;
+                } else if (aiAction.equals("disable")) {
+                    plugin.getAiMcpManager().setEnabled(false);
+                    sender.sendMessage(prefix + ChatColor.YELLOW + "AI MCP Server disabled.");
+                    plugin.logToFile(senderName, "EXECUTED AC AI disable");
+                    return true;
+                } else if (aiAction.equals("status")) {
+                    boolean active = plugin.getAiMcpManager().isEnabled();
+                    sender.sendMessage(prefix + ChatColor.YELLOW + "AI MCP Status: " + (active ? ChatColor.GREEN + "Active (Port " + plugin.getAiMcpManager().getPort() + ")" : ChatColor.RED + "Inactive"));
+                    return true;
+                } else {
+                    sender.sendMessage(prefix + ChatColor.RED + "Usage: /ac ai <enable|disable|status>");
+                    return true;
+                }
+            }
 
             if (subCommand.equals("start")) {
                 if (args.length != 2) {
@@ -206,6 +232,8 @@ public class ACCommandExecutor implements CommandExecutor {
                 sender.sendMessage(prefix + ChatColor.YELLOW + "Current Mode: " + plugin.getCurrentAntiCheatMode() + " (" + modeDesc + ")");
                 sender.sendMessage(prefix + ChatColor.YELLOW + "Hardware Profile: " + plugin.getHardwareManager().getCurrentHardwareMode() + (plugin.getHardwareManager().isForced() ? " (Forced)" : " (Auto)"));
                 sender.sendMessage(prefix + ChatColor.YELLOW + "Active Checks: " + plugin.getEnabledChecksString());
+                boolean aiActive = plugin.getAiMcpManager() != null && plugin.getAiMcpManager().isEnabled();
+                sender.sendMessage(prefix + ChatColor.YELLOW + "AI MCP Status: " + (aiActive ? ChatColor.GREEN + "Active (Port " + plugin.getAiMcpManager().getPort() + ")" : ChatColor.RED + "Inactive"));
 
                 if (plugin.getUpdateManager().isUpdateAvailable()) {
                     sender.sendMessage(prefix + ChatColor.RED + ChatColor.BOLD + "UPDATE AVAILABLE: " + plugin.getUpdateManager().getLatestVersion());
@@ -257,6 +285,9 @@ public class ACCommandExecutor implements CommandExecutor {
                 plugin.reloadConfig();
                 plugin.loadConfigValues();
                 plugin.refreshPacketChecks();
+                if (plugin.getAiMcpManager() != null) {
+                    plugin.getAiMcpManager().reload();
+                }
 
                 sender.sendMessage(prefix + ChatColor.GREEN + "Configurations reloaded.");
                 plugin.logToFile(senderName, "EXECUTED AC reload.");
